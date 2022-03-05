@@ -25,12 +25,12 @@ size_t	ft_strlen(const char *str)
 char	*ft_strchr(char *str, int c)
 {
 	int		num;
-	
+
 	num = 0;
 	while (str[num] && str[num] != (char)c)
 		num++;
 	if (str[num] == (char)c)
-			return (&str[num]);
+		return (&str[num]);
 	return (NULL);
 }
 

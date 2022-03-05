@@ -12,7 +12,7 @@
 
 #include "get_next_line_bonus.h"
 
-int	new_line_index (char *str)
+int	new_line_index(char *str)
 {
 	int	index;
 
@@ -22,7 +22,7 @@ int	new_line_index (char *str)
 	return (index);
 }
 
-char *return_line(char **stash, int rd, char *buff)
+char	*return_line(char **stash, int rd, char *buff)
 {
 	char	*tmp;
 	char	*tmp_1;
