@@ -6,7 +6,7 @@
 /*   By: yamrire <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/17 22:57:35 by yamrire           #+#    #+#             */
-/*   Updated: 2022/03/08 04:51:49 by yamrire          ###   ########.fr       */
+/*   Updated: 2022/03/12 17:33:09 by yamrire          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,18 +22,16 @@ int	new_line_index(char *str)
 	return (index);
 }
 
-char	*return_new_line(char **stash, int rd, char **buff)
+char	*return_new_line(char **stash, int rd, char *buff)
 {
 	char	*tmp;
 	char	*tmp1;
 	int		index;
-	int		len;
 
-	free(*buff);
+	free(buff);
 	if (rd < 0 || !(*stash))
 		return (NULL);
 	index = new_line_index(*stash);
-	//len = ft_strlen(*stash);
 	tmp = ft_substr(*stash, 0, index + 1);
 	tmp1 = ft_substr(*stash, index + 1, ft_strlen(*stash) - index);
 	free(*stash);
@@ -54,9 +52,9 @@ char	*get_next_line(int fd)
 	char		*line;
 	int			rd;
 
-	if (fd < 0)
-		return (NULL);
 	buff = malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	if (!buff)
+		return (NULL);
 	rd = read(fd, buff, BUFFER_SIZE);
 	while (rd > 0)
 	{
@@ -73,5 +71,5 @@ char	*get_next_line(int fd)
 			break ;
 		rd = read(fd, buff, BUFFER_SIZE);
 	}
-	return (return_new_line(&stash, rd, &buff));
+	return (return_new_line(&stash, rd, buff));
 }

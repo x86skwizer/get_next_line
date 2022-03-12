@@ -6,7 +6,7 @@
 /*   By: yamrire <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/17 22:57:35 by yamrire           #+#    #+#             */
-/*   Updated: 2022/03/05 16:25:23 by yamrire          ###   ########.fr       */
+/*   Updated: 2022/03/12 17:35:55 by yamrire          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,15 +27,13 @@ char	*return_line(char **stash, int rd, char *buff)
 	char	*tmp;
 	char	*tmp_1;
 	int		index;
-	int		len;
 
 	free (buff);
 	if (rd < 0 || !(*stash))
 		return (NULL);
 	index = new_line_index(*stash);
-	len = ft_strlen(*stash);
 	tmp = ft_substr(*stash, 0, index + 1);
-	tmp_1 = ft_substr(*stash, index + 1, len - index);
+	tmp_1 = ft_substr(*stash, index + 1, ft_strlen(*stash) - index);
 	free (*stash);
 	if (tmp_1[0] == '\0')
 	{
@@ -54,9 +52,9 @@ char	*get_next_line(int fd)
 	char		*line;
 	int			rd;
 
-	if (fd < 0)
-		return (NULL);
 	buff = malloc (BUFFER_SIZE + 1);
+	if (!buff)
+		return (NULL);
 	rd = read(fd, buff, BUFFER_SIZE);
 	while (rd > 0)
 	{
