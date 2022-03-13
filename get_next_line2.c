@@ -21,48 +21,8 @@ int	new_line_index(char *str)
 		index++;
 	return (index);
 }
-char *ft_line(char *str)
-{
-	char *line;
-	int i;
-	int j;
 
-	i = 0;
-	j = 0;
-	if (!str ||!str[0])
-		return (NULL);
-	line = (char *)malloc(new_line_index(str) + 2);
-	while(str[i] && str[i] != '\n')
-		line[j++] = str[i++];
-	if (str[i] == '\n')
-		line[j++] = '\n';
-	line[j] = '\0';
-	return (line);
-}
-
-char *ft_delete(char *str)
-{
-	char *res;
-	int i;
-	int j;
-
-	i = 0;
-	j = 0;
-	if (!str || !str[0])
-		return (NULL);
-	res = (char *)malloc(ft_strlen(str) - new_line_index(str) + 1);
-	while(str[i] && str[i] != '\n')
-		i++;
-	if (str[i] == '\n')
-		i++;
-	while(str[i])
-		res[j++] = str[i++];
-	res[j] = '\0';
-	free(str);
-	str = NULL;
-	return (res);
-}
-/*char	*return_new_line(char **stash, int rd, char *buff)
+char	*return_new_line(char **stash, int rd, char *buff)
 {
 	char	*tmp;
 	char	*tmp1;
@@ -83,43 +43,50 @@ char *ft_delete(char *str)
 	else
 		*stash = tmp1;
 	return (tmp);
-}*/
+}
+
+void	stash_gnl(char **stash, char *buff, char **line)
+{
+	*line = ft_strjoin(*stash, buff);
+	free(*stash);
+	*stash = *line;
+}
+
+int	initialize_gnl(int fd, char **buff, char *stash)
+{
+	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (0);
+	*buff = malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	if (!(*buff))
+	{
+		free(stash);
+		return (0);
+	}
+	return (1);
+}
 
 char	*get_next_line(int fd)
 {
-	static char	*stash = NULL;
+	static char	*stash;
 	char		*buff;
 	char		*line;
 	int			rd;
 
-	buff = malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (!buff)
+	if (!initialize_gnl(fd, &buff, stash))
 		return (NULL);
-	//rd = read(fd, buff, BUFFER_SIZE);
-	rd = 1;
-	while (rd != 0 && ft_strchr(stash, '\n') == NULL)
+	rd = read(fd, buff, BUFFER_SIZE);
+	while (rd > 0)
 	{
-		rd = read(fd, buff, BUFFER_SIZE);
-		if (rd == -1)
-		{
-			free(buff);
-			buff = NULL;
-			return (NULL);
-		}
 		buff[rd] = '\0';
-		stash = ft_strjoin(stash, buff);
-		/*if (ft_strchr(stash, '\n') != NULL)
-			break ;*/
+		if (!stash)
+			stash = ft_strdup(buff);
+		else if (buff)
+		{
+			stash_gnl(&stash, buff, &line);
+		}
+		if (ft_strchr(stash, '\n') != NULL)
+			break ;
+		rd = read(fd, buff, BUFFER_SIZE);
 	}
-	free(buff);
-	buff = NULL;
-	line = ft_line(stash);
-	if (!line)
-	{
-		free(stash);
-		stash = NULL;
-		return (NULL);
-	}
-	stash = ft_delete(stash);
-	return(line);
+	return (return_new_line(&stash, rd, buff));
 }
