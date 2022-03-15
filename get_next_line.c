@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: yamrire <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/01/17 22:57:35 by yamrire           #+#    #+#             */
-/*   Updated: 2022/03/12 17:33:09 by yamrire          ###   ########.fr       */
+/*   Created: 2022/03/15 11:26:43 by yamrire           #+#    #+#             */
+/*   Updated: 2022/03/15 12:48:52 by yamrire          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,105 +21,71 @@ int	new_line_index(char *str)
 		index++;
 	return (index);
 }
-char *ft_line(char *str)
-{
-	char *line;
-	int i;
-	int j;
 
-	i = 0;
-	j = 0;
-	if (!str ||!str[0])
+char	*analyse_line(char **stash)
+{
+	char	*line;
+	char	*tmp;
+	int		index;
+	
+	if (!*stash || !*stash[0])
+	{
+		free(*stash);
+		*stash = NULL;
 		return (NULL);
-	line = (char *)malloc(new_line_index(str) + 2);
-	while(str[i] && str[i] != '\n')
-		line[j++] = str[i++];
-	if (str[i] == '\n')
-		line[j++] = '\n';
-	line[j] = '\0';
+	}
+	index = new_line_index(*stash);
+	if (*stash[index] == '\n')
+	{
+		line = ft_substr(*stash, 0, index + 1);
+		tmp = ft_strdup(*stash + (index + 1));
+		free(*stash);
+		*stash = tmp;
+		return (line);
+	}
+	line = ft_strdup(*stash);
+	free(*stash);
+	*stash = NULL;
 	return (line);
 }
 
-char *ft_delete(char *str)
-{
-	char *res;
-	int i;
-	int j;
-
-	i = 0;
-	j = 0;
-	if (!str || !str[0])
-		return (NULL);
-	res = (char *)malloc(ft_strlen(str) - new_line_index(str) + 1);
-	while(str[i] && str[i] != '\n')
-		i++;
-	if (str[i] == '\n')
-		i++;
-	while(str[i])
-		res[j++] = str[i++];
-	res[j] = '\0';
-	free(str);
-	str = NULL;
-	return (res);
-}
-/*char	*return_new_line(char **stash, int rd, char *buff)
+void form_line(int fd, char **stash, char *buff, ssize_t rd)
 {
 	char	*tmp;
-	char	*tmp1;
-	int		index;
 
-	free(buff);
-	if (rd < 0 || !(*stash))
-		return (NULL);
-	index = new_line_index(*stash);
-	tmp = ft_substr(*stash, 0, index + 1);
-	tmp1 = ft_substr(*stash, index + 1, ft_strlen(*stash) - index);
-	free(*stash);
-	if (tmp1[0] == '\0')
+	while (rd > 0)
 	{
-		free (tmp1);
-		*stash = NULL;
+		tmp = ft_strjoin(*stash, buff);
+		free(*stash);
+		*stash = tmp;
+		if (ft_strchr(*stash, '\n') != NULL)
+			break ;
+		rd = read(fd, buff, BUFFER_SIZE);
+		buff[rd] = '\0';
 	}
-	else
-		*stash = tmp1;
-	return (tmp);
-}*/
+	free(buff);
+}
 
 char	*get_next_line(int fd)
 {
-	static char	*stash = NULL;
+	static char	*stash;
 	char		*buff;
 	char		*line;
-	int			rd;
+	ssize_t		rd;
 
-	buff = malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	buff = (char *) malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!buff)
 		return (NULL);
-	//rd = read(fd, buff, BUFFER_SIZE);
-	rd = 1;
-	while (rd != 0 && ft_strchr(stash, '\n') == NULL)
+	rd = read(fd, buff, BUFFER_SIZE);
+	if (rd == -1)
 	{
-		rd = read(fd, buff, BUFFER_SIZE);
-		if (rd == -1)
-		{
-			free(buff);
-			buff = NULL;
-			return (NULL);
-		}
-		buff[rd] = '\0';
-		stash = ft_strjoin(stash, buff);
-		/*if (ft_strchr(stash, '\n') != NULL)
-			break ;*/
-	}
-	free(buff);
-	buff = NULL;
-	line = ft_line(stash);
-	if (!line)
-	{
-		free(stash);
-		stash = NULL;
+		free (buff);
 		return (NULL);
 	}
-	stash = ft_delete(stash);
-	return(line);
+	buff[rd] = '\0';
+	if (!stash)
+		ft_strdup("");
+	form_line(fd, &stash, buff, rd);
+	line = analyse_line(&stash);
+	return (line);
 }
