@@ -28,17 +28,17 @@ char	*analyse_line(char **stash)
 	char	*tmp;
 	int		index;
 	
-	if (!*stash || !*stash[0])
+	if (!*stash || !(*stash)[0])
 	{
 		free(*stash);
 		*stash = NULL;
 		return (NULL);
 	}
 	index = new_line_index(*stash);
-	if (*stash[index] == '\n')
+	if ((*stash)[index] == '\n')
 	{
 		line = ft_substr(*stash, 0, index + 1);
-		tmp = ft_strdup(*stash + (index + 1));
+		tmp = ft_strdup((*stash) + (index + 1));
 		free(*stash);
 		*stash = tmp;
 		return (line);
@@ -84,7 +84,7 @@ char	*get_next_line(int fd)
 	}
 	buff[rd] = '\0';
 	if (!stash)
-		ft_strdup("");
+		stash = ft_strdup("");
 	form_line(fd, &stash, buff, rd);
 	line = analyse_line(&stash);
 	return (line);
