@@ -22,27 +22,48 @@ int	new_line_index(char *str)
 	return (index);
 }
 
-char	*return_line(char **stash, int rd, char *buff)
+char	*analyse_line(char **stash)
+{
+	char	*line;
+	char	*tmp;
+	int		index;
+	
+	if (!*stash || !(*stash)[0])
+	{
+		free(*stash);
+		*stash = NULL;
+		return (NULL);
+	}
+	index = new_line_index(*stash);
+	if ((*stash)[index] == '\n')
+	{
+		line = ft_substr(*stash, 0, index + 1);
+		tmp = ft_strdup((*stash) + (index + 1));
+		free(*stash);
+		*stash = tmp;
+		return (line);
+	}
+	line = ft_strdup(*stash);
+	free(*stash);
+	*stash = NULL;
+	return (line);
+}
+
+void form_line(int fd, char **stash, char *buff, ssize_t rd)
 {
 	char	*tmp;
-	char	*tmp_1;
-	int		index;
 
-	free (buff);
-	if (rd < 0 || !(*stash))
-		return (NULL);
-	index = new_line_index(*stash);
-	tmp = ft_substr(*stash, 0, index + 1);
-	tmp_1 = ft_substr(*stash, index + 1, ft_strlen(*stash) - index);
-	free (*stash);
-	if (tmp_1[0] == '\0')
+	while (rd > 0)
 	{
-		free (tmp_1);
-		*stash = NULL;
+		tmp = ft_strjoin(*stash, buff);
+		free(*stash);
+		*stash = tmp;
+		if (ft_strchr(*stash, '\n') != NULL)
+			break ;
+		rd = read(fd, buff, BUFFER_SIZE);
+		buff[rd] = '\0';
 	}
-	else
-		*stash = tmp_1;
-	return (tmp);
+	free(buff);
 }
 
 char	*get_next_line(int fd)
@@ -50,26 +71,21 @@ char	*get_next_line(int fd)
 	static char	*stash[OPEN_MAX];
 	char		*buff;
 	char		*line;
-	int			rd;
+	ssize_t		rd;
 
-	buff = malloc (BUFFER_SIZE + 1);
+	buff = (char *) malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!buff)
 		return (NULL);
 	rd = read(fd, buff, BUFFER_SIZE);
-	while (rd > 0)
+	if (rd == -1)
 	{
-		buff[rd] = '\0';
-		if (!stash[fd])
-			stash[fd] = ft_strdup(buff);
-		else if (buff)
-		{
-			line = ft_strjoin(stash[fd], buff);
-			free (stash[fd]);
-			stash[fd] = line;
-		}
-		if (ft_strchr(stash[fd], '\n') != NULL)
-			break ;
-		rd = read(fd, buff, BUFFER_SIZE);
+		free (buff);
+		return (NULL);
 	}
-	return (return_line(&stash[fd], rd, buff));
+	buff[rd] = '\0';
+	if (!stash[fd])
+		stash[fd] = ft_strdup("");
+	form_line(fd, &stash[fd], buff, rd);
+	line = analyse_line(&stash[fd]);
+	return (line);
 }
