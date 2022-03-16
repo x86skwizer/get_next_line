@@ -27,7 +27,7 @@ char	*analyse_line(char **stash)
 	char	*line;
 	char	*tmp;
 	int		index;
-	
+
 	if (!*stash || !(*stash)[0])
 	{
 		free(*stash);
@@ -49,7 +49,7 @@ char	*analyse_line(char **stash)
 	return (line);
 }
 
-void form_line(int fd, char **stash, char *buff, ssize_t rd)
+void	form_line(int fd, char **stash, char *buff, ssize_t rd)
 {
 	char	*tmp;
 
